@@ -1,0 +1,57 @@
+version: '3.7'
+services:
+  php:
+    container_name: ${PHP_NAME}
+    build: ${PHP_CONTAINER_DIR}
+    ports:
+      - ${PHP_PORT}:${PHP_PORT}
+    volumes:
+      - ${LOCAL_DIR}:/var/www
+
+  nginx:
+    image: nginx
+    container_name: ${NGINX_NAME}
+    ports:
+      - ${NGINX_PORT}:${NGINX_PORT}
+    volumes:
+      - ${LOCAL_DIR}:/var/www
+      - ${NGINX_CONF}:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+
+  db:
+    container_name: ${DB_NAME}
+    build: ${DB_CONTAINER_DIR}
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      TZ: 'Asia/Tokyo'
+    restart: always
+    volumes:
+      - ./docker/db/data:/var/lib/mysql
+      - ./docker/db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - ${DB_PORT}:${DB_PORT}
+
+  swagger:
+    image: swaggerapi/swagger-editor
+    volumes:
+      - ./docker/swagger/${SWAGGER_YAML}:/usr/share/nginx/html/${SWAGGER_YAML}
+    environment:
+      API_URL: ${SWAGGER_YAML}
+    ports:
+      - ${SWAGGER_PORT}:${SWAGGER_PORT}
+
+  node:
+    container_name: node
+    build:
+      context: ./
+      dockerfile: ${NODE_DOCKERFILE}
+    tty: true
+    volumes:
+      - ${LOCAL_DIR}:/app
+    ports:
+      - ${NODE_PORT}:${NODE_PORT}
+      - ${NODE_UI_PORT}:${NODE_UI_PORT}

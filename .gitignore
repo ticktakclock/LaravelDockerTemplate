@@ -1,0 +1,10 @@
+*.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+!.gitkeep
+.vscode/
+.idea/
+.env
+
+
